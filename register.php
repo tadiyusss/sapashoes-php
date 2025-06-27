@@ -38,10 +38,6 @@
                         <label for="retype_password" class="text-sm font-medium text-gray-600">Retype Password</label>
                         <input type="password" name="retype_password" id="retype_password" class="w-full border ease duration-200 focus:outline-zinc-200 focus:ring-zinc-200 hover:outline-zinc-200 px-2 py-1 rounded">
                     </div>
-                    <div class="flex items-center space-x-1">
-                        <input type="checkbox" name="remember_me" id="remember_me">
-                        <label for="remember_me"  class="text-sm font-medium text-gray-600">Remember Me</label>
-                    </div>
                     <div>
                         <button type="submit" class="bg-zinc-800 hover:bg-zinc-950 ease duration-200 text-white w-full px-4 py-1 rounded">Login</button>
                     </div>
