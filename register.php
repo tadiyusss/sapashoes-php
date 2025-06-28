@@ -16,7 +16,7 @@
                 <p>Return to Home</p>
             </a>
             <h4 class="bebas-neue mb-4 text-4xl">SapaShoes</h4>
-            <form method="POST" class="border rounded p-6 bg-white shadow">
+            <form action="process_signup.php" method="POST" class="border rounded p-6 bg-white shadow">
                 <div class="mb-6">
                     <h2 class="text-3xl">Register</h2>
                     <p class="text-gray-600 text-sm">Please fill in the form below to create your account.</p>
