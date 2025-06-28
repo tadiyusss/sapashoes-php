@@ -1,9 +1,73 @@
+<?php
+    $message = "";
+    $error = false;
+    require __DIR__ .'/config.php';
+
+    if($_SERVER['REQUEST_METHOD'] === "POST"){
+        $username = $_POST['username'];
+        $password = $_POST['password'];
+        $email = $_POST['email'];
+        $retype_password = $_POST['retype_password'];
+
+        if (empty($_POST['username'])) {
+            $message = "Username is required";
+            $error = true;
+        } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $message = 'Invalid email format';
+            $error = true;
+        } else if (strlen($password) < 8) {
+            $message = "Password must be at least 8 characters long";
+            $error = true;
+        } else if (!preg_match('/[A-Z]/', $password)) {
+            $message = "Password must contain at least one uppercase letter";
+            $error = true;
+        } else if (!preg_match('/[0-9]/', $password)) {
+            $message = "Password must contain at least one number";
+            $error = true;
+        } else if ($password !== $retype_password) {
+            $message = "Passwords do not match";
+            $error = true;
+        }
+
+        $sql = "SELECT * FROM users WHERE username = ? OR email = ? LIMIT 1";
+        $result = $conn->prepare($sql);
+        $result->bind_param("ss", $username, $email);
+        $result->execute();
+        $result = $result->get_result();
+        if ($result->num_rows > 0) {
+            $message = "Username or email already exists";
+            $error = true;
+        }
+        if (!$error){
+            $password_hash = password_hash($password, PASSWORD_DEFAULT);
+            $sql = "INSERT INTO users (email, username, password_hash) VALUES (?, ?, ?)";
+            $stmt = $conn->prepare($sql);
+            if ($stmt) {
+                $stmt->bind_param("sss", $email, $username, $password_hash);
+                if ($stmt->execute()) {
+                    $_SESSION['username'] = $username;
+                    header("Location: cart.php");
+                } else {
+                    $message = "Registration failed. Please try again.";
+                    $error = true;
+                }
+                $stmt->close();
+            } else {
+                $message = "Database error: " . $conn->error;
+                $error = true;
+            }
+            $conn->close();
+        }
+
+    }
+?>
+
 <!doctype html>
 <html lang='en'>
     <head>
         <meta charset='utf-8'>
         <meta name='viewport' content='width=device-width, initial-scale=1'>
-        <title>Tailwind</title>
+        <title>Sapashoes - Register</title>
         <script src='assets/js/tailwind.js'></script>
         <link rel="stylesheet" href="assets/css/main.css">
     </head>
@@ -16,7 +80,7 @@
                 <p>Return to Home</p>
             </a>
             <h4 class="bebas-neue mb-4 text-4xl">SapaShoes</h4>
-            <form action="process_signup.php" method="POST" class="border rounded p-6 bg-white shadow">
+            <form method="POST" class="border rounded p-6 bg-white shadow">
                 <div class="mb-6">
                     <h2 class="text-3xl">Register</h2>
                     <p class="text-gray-600 text-sm">Please fill in the form below to create your account.</p>
@@ -43,6 +107,11 @@
                     </div>
                 </div>
             </form>
+            <?php if ($error && strlen($message) > 0): ?>
+                <div class="mt-4 bg-red-600 text-white p-2 rounded">
+                    <p><?= $message; ?></p>
+                </div>
+            <?php endif; ?>
             <div class="text-center mt-4">
                 <a href="login.php" class="text-gray-500">Already have an account? <span class="underline">Login.</span></a>
             </div>

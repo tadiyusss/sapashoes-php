@@ -1,25 +1,35 @@
 <?php
     $is_invalid = false;
+    require __DIR__ . "/config.php";
+
     if ($_SERVER["REQUEST_METHOD"] === "POST") {
-        
+        $username = $_POST["username"];
+        $password = $_POST["password"];
 
-        $mysqli = require __DIR__ . "/database.php";
+        $sql = "SELECT * FROM users WHERE username = ? LIMIT 1";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-        $sql = sprintf("SELECT * FROM user 
-                        WHERE username = '%s'",
-                        $mysqli->real_escape_string($_POST["username"]));
+        if ($result->num_rows == 0) {
+            $is_invalid = true;
+        }
 
-        $result = $mysqli->query($sql);
-        $user = $result->fetch_assoc();
+        if (!$is_invalid) {
+            $user = $result->fetch_assoc();
+            if (!password_verify($password, $user["password_hash"])) {
+                $is_invalid = true;
+            } else {
+                session_start();
+                $_SESSION["user_id"] = $user["id"];
+                $_SESSION["username"] = $user["username"];
 
-        if($user){
-            if(password_verify($_POST["password"], $user["password_hash"])){
                 header("Location: index.php");
-                exit;
             }
         }
-       
-        $is_invalid = true;
+
+        $stmt->close();
     }
 ?>
 
@@ -28,7 +38,7 @@
     <head>
         <meta charset='utf-8'>
         <meta name='viewport' content='width=device-width, initial-scale=1'>
-        <title>Tailwind</title>
+        <title>Sapashoes - Login</title>
         <script src='assets/js/tailwind.js'></script>
         <link rel="stylesheet" href="assets/css/main.css">
     </head>
@@ -40,9 +50,7 @@
                 </svg>
                 <p>Return to Home</p>
             </a>
-            <?php if ($is_invalid): ?>
-                <p style="color: red;">Invalid username or password</p>
-            <?php endif; ?>
+            
             <h4 class="bebas-neue mb-4 text-4xl">SapaShoes</h4>
             <form  method="POST" class="border rounded p-6 bg-white shadow">
                 <div class="mb-6">
@@ -67,6 +75,11 @@
                     </div>
                 </div>
             </form>
+            <?php if ($is_invalid): ?>
+                <div class="mt-4 bg-red-600 text-white p-2 rounded">
+                    <p>Invalid username or password</p>
+                </div>
+            <?php endif; ?>
             <div class="text-center mt-4">
                 <a href="register.php" class="text-gray-500">Don't have an account? <span class="underline">Register.</span></a>
             </div>
