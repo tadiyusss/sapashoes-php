@@ -1,3 +1,52 @@
+<?php 
+    require_once '../config.php';
+    $message = '';
+    $error = false;
+    $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    $upload_dir = '../assets/images/shoes';
+
+    if ($_SERVER['REQUEST_METHOD'] === "POST"){
+        $name = $_POST['name'] ?? '';
+        $price = $_POST['price'] ?? '';
+        $image = $_FILES['image'] ?? null;
+
+        if (!$name || !$price || !$image) {
+            $message = 'Please fill in all fields.';
+            $error = true;
+        }
+
+       # check if image file type is not allowed
+        $file_extension = strtolower(pathinfo($image['name'], PATHINFO_EXTENSION));
+        if (!in_array($file_extension, $allowed_extensions)) {
+            $message = "Invalid image file type. Allowed types: " . implode(', ', $allowed_extensions);
+            $error = true;
+        }
+        
+        $new_name = uniqid() . '.' . $file_extension;
+        if (!move_uploaded_file($image['tmp_name'], $upload_dir . '/' . $new_name)) {
+            $message = 'Unable to move file to the upload folder.';
+            $error = true;
+        }
+
+
+        if (!$error) {
+            $query = "INSERT INTO products (name, price, image) VALUES (?, ?, ?)";
+            $stmt = mysqli_prepare($conn, $query);
+            mysqli_stmt_bind_param($stmt, 'sds', $name, $price, $new_name);
+
+            if (mysqli_stmt_execute($stmt)) {
+                $message = 'Product created successfully!';
+            } else {
+                $message = 'Error creating product: ' . mysqli_error($conn);
+                $error = true;
+            }
+        }
+        
+    }
+
+
+?>
+
 <!doctype html>
 <html lang='en'>
     <head>
@@ -8,16 +57,25 @@
         <link rel="stylesheet" href="../assets/css/main.css">
     </head>
     <body class="bg-gray-50 roboto">
-        <div class="max-w-xl p-4 my-24 mx-auto">
+        <div class="max-w-xl p-4 my-24 mx-auto space-y-4">
             <a href="index.php" class="flex items-center space-x-2 mb-2 text-gray-600 hover:text-gray-800 ease duration-200">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18" />
                 </svg>
                 <p>Return to Home</p>
             </a>
+            <?php if (strlen($message) > 0 && $error == true): ?>
+                <div class="w-full bg-red-600 text-white p-2 rounded">
+                    <p><?php echo $message; ?></p>
+                </div>
+            <?php elseif (strlen($message) > 0 && $error == false): ?>
+                <div class="w-full bg-green-600 text-white p-2 rounded">
+                    <p><?php echo $message; ?></p>
+                </div>
+            <?php endif; ?>
             <div class="rounded bg-white border p-4">
                 <h4 class="text-xl font-medium">Create Product</h4>
-                <form method="post" class="mt-6" accept="multipart/form-data">
+               <form method="post" class="mt-6" enctype="multipart/form-data" accept="image/*">
                     <div class="space-y-4">
                         <div>
                             <label for="name" class="text-sm font-medium text-gray-600">Product Name</label>
