@@ -1,3 +1,28 @@
+<?php
+    $is_invalid = false;
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
+        
+
+        $mysqli = require __DIR__ . "/database.php";
+
+        $sql = sprintf("SELECT * FROM user 
+                        WHERE username = '%s'",
+                        $mysqli->real_escape_string($_POST["username"]));
+
+        $result = $mysqli->query($sql);
+        $user = $result->fetch_assoc();
+
+        if($user){
+            if(password_verify($_POST["password"], $user["password_hash"])){
+                header("Location: index.php");
+                exit;
+            }
+        }
+       
+        $is_invalid = true;
+    }
+?>
+
 <!doctype html>
 <html lang='en'>
     <head>
@@ -15,8 +40,11 @@
                 </svg>
                 <p>Return to Home</p>
             </a>
+            <?php if ($is_invalid): ?>
+                <p style="color: red;">Invalid username or password</p>
+            <?php endif; ?>
             <h4 class="bebas-neue mb-4 text-4xl">SapaShoes</h4>
-            <form method="POST" class="border rounded p-6 bg-white shadow">
+            <form  method="POST" class="border rounded p-6 bg-white shadow">
                 <div class="mb-6">
                     <h2 class="text-3xl">Login</h2>
                     <p class="text-gray-600 text-sm">Sign in to access your account and continue where you left off.</p>
@@ -24,7 +52,7 @@
                 <div class="space-y-4">
                     <div>
                         <label for="username" class="text-sm font-medium text-gray-600">Username</label>
-                        <input type="text" name="username" id="username" class="w-full border ease duration-200 focus:outline-zinc-200 focus:ring-zinc-200 hover:outline-zinc-200 px-2 py-1 rounded">
+                        <input type="text" name="username" id="username" class="w-full border ease duration-200 focus:outline-zinc-200 focus:ring-zinc-200 hover:outline-zinc-200 px-2 py-1 rounded" value="<?= htmlspecialchars($_POST["username"] ?? "") ?>">
                     </div>
                     <div>
                         <label for="password" class="text-sm font-medium text-gray-600">Password</label>
