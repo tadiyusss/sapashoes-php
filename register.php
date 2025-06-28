@@ -3,6 +3,10 @@
     $error = false;
     require __DIR__ .'/config.php';
 
+    if (isset($_SESSION['username'])){
+        header("Location: cart.php");
+    }
+
     if($_SERVER['REQUEST_METHOD'] === "POST"){
         $username = $_POST['username'];
         $password = $_POST['password'];
