@@ -67,6 +67,11 @@
                     </tr>
                 </thead>
                 <tbody>
+                    <?php if (empty($products)): ?>
+                        <tr class="border-b text-center">
+                            <td colspan="4" class="py-2 text-gray-600">No products found.</td>
+                        </tr>
+                    <?php endif; ?>
                     <?php foreach ($products as $index => $product): ?>
                         <tr class="border-b text-center hover:bg-gray-50">
                             <td class="py-2"><?php echo $index + 1; ?></td>
