@@ -27,9 +27,8 @@
                 $is_invalid = true;
             } else {
                 session_start();
-                $_SESSION["user_id"] = $user["id"];
                 $_SESSION["username"] = $user["username"];
-
+                $_SESSION['type'] = $user["type"];
                 header("Location: index.php");
             }
         }
