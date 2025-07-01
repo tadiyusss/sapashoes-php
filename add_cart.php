@@ -26,7 +26,7 @@
         header('Location: index.php');
     }
 
-    $stmt = $conn->prepare('INSERT INTO cart (owner_id, product_id, quantity) VALUES (?, ?, 1)');
+    $stmt = $conn->prepare('INSERT INTO cart (owner_id, product_id) VALUES (?, ?)');
     $stmt->bind_param('ii', $user_id, $id);
     $stmt->execute();
     $stmt->close();
