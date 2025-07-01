@@ -1,7 +1,7 @@
 <?php 
 
     require_once 'config.php';
-    $result = mysqli_query($conn, "SELECT * FROM products ORDER BY id DESC");
+    $result = mysqli_query($conn, "SELECT * FROM products WHERE stocks > 0 ORDER BY id DESC");
     $products = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
 ?>
