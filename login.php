@@ -1,8 +1,9 @@
 <?php
     $is_invalid = false;
     require __DIR__ . "/config.php";
-
-
+    require_once __DIR__ . "/utils/flash.php";
+    
+    $flash_message = get_flash('error');
     if (isset($_SESSION['username'])){
         header("Location: cart.php");
     }
@@ -29,6 +30,7 @@
                 session_start();
                 $_SESSION["username"] = $user["username"];
                 $_SESSION['type'] = $user["type"];
+                $_SESSION['user_id'] = $user['id'];
                 header("Location: index.php");
             }
         }
@@ -79,6 +81,11 @@
                     </div>
                 </div>
             </form>
+            <?php if($flash_message): ?>
+                <div class="mt-4 bg-red-600 text-white p-2 rounded">
+                    <p><?= $flash_message ?></p>
+                </div>
+            <?php endif; ?>
             <?php if ($is_invalid): ?>
                 <div class="mt-4 bg-red-600 text-white p-2 rounded">
                     <p>Invalid username or password</p>
