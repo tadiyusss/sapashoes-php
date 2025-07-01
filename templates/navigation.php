@@ -3,11 +3,13 @@
         <div class="max-w-7xl mx-auto">
             <ul class="flex items-center space-x-8 roboto">
                 <li>
-                    <a href="login.php">My Account</a>
-                </li>
-                <li>
                     <a href="cart.php">Cart</a>
                 </li>
+                <?php if (isset($_SESSION['username']) && isset($_SESSION['type'])): ?>
+                    <li>
+                        <a href="logout.php">Logout</a>
+                    </li>
+                <?php endif; ?>
             </ul>
         </div>
     </div>
