@@ -9,9 +9,16 @@
         $name = $_POST['name'] ?? '';
         $price = $_POST['price'] ?? '';
         $image = $_FILES['image'] ?? null;
+        $stocks = $_POST['stocks'] ?? '';
 
-        if (!$name || !$price || !$image) {
+        if (!$name || !$price || !$image || !$stocks) {
             $message = 'Please fill in all fields.';
+            $error = true;
+        }
+
+
+        if ($stocks <= 0) {
+            $message = 'Stocks must be greater than zero.';
             $error = true;
         }
 
@@ -30,9 +37,9 @@
 
 
         if (!$error) {
-            $query = "INSERT INTO products (name, price, image) VALUES (?, ?, ?)";
+            $query = "INSERT INTO products (name, price, image, stocks) VALUES (?, ?, ?, ?)";
             $stmt = mysqli_prepare($conn, $query);
-            mysqli_stmt_bind_param($stmt, 'sds', $name, $price, $new_name);
+            mysqli_stmt_bind_param($stmt, 'sdsi', $name, $price, $new_name, $stocks);
 
             if (mysqli_stmt_execute($stmt)) {
                 $message = 'Product created successfully!';
@@ -84,6 +91,10 @@
                         <div>
                             <label for="price" class="text-sm font-medium text-gray-600">Price</label>
                             <input type="number" name="price" id="price" class="w-full border ease duration-200 focus:outline-zinc-200 focus:ring-zinc-200 hover:outline-zinc-200 px-2 py-1 rounded appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                        </div>
+                        <div>
+                            <label for="image" class="text-sm font-medium text-gray-600">Stocks</label>
+                            <input type="number" name="stocks" id="stocks" class="w-full border ease duration-200 focus:outline-zinc-200 focus:ring-zinc-200 hover:outline-zinc-200 px-2 py-1 rounded appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
                         </div>
                         <div>
                             <label for="image" class="text-sm font-medium text-gray-600">Image</label>
