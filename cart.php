@@ -1,9 +1,38 @@
+<?php 
+    require 'config.php';
+    $total_price = 0;
+    function get_product_by_id($product_id, $conn) {
+        $stmt = $conn->prepare("SELECT * FROM products WHERE id = ?");
+        $stmt->bind_param("i", $product_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $product = $result->fetch_assoc();
+        $stmt->close();
+        return $product;
+    }
+
+    if (!isset($_SESSION['username']) || !isset($_SESSION['type'])) {
+        header('Location: login.php');
+    }
+
+    $stmt = $conn->prepare("SELECT * FROM cart WHERE owner_id = ? ORDER BY id DESC");
+    $stmt->bind_param("i", $_SESSION["user_id"]);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $cart_items = $result->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+
+    print_r($cart_items);
+    echo $_SESSION['user_id'];
+
+?>
+
 <!doctype html>
 <html lang='en'>
     <head>
         <meta charset='utf-8'>
         <meta name='viewport' content='width=device-width, initial-scale=1'>
-        <title>Tailwind</title>
+        <title>Sapashoes - Cart</title>
         <script src='assets/js/tailwind.js'></script>
         <link rel="stylesheet" href="assets/css/main.css">    
     </head>
@@ -14,32 +43,32 @@
                 <div class="space-y-8">
                     <div>
                         <h2 class="roboto font-medium text-2xl mb-4">Shopping Cart</h2>
-                        <?php for ($i = 1; $i <= 3; $i++): ?>
+                    </div>
+                    <?php foreach ($cart_items as $cart_item): ?>
+                        <?php $product = get_product_by_id($cart_item['product_id'], $conn); ?>
                         <div class="border-b p-2 pb-4 flex items-center justify-between">
                             <div class="flex items-center space-x-12">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 text-gray-800">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                </svg>
-                                <img src="assets/images/shoes/new-arrival-1.webp" class="size-24 border rounded bg-white">
+                                <a href="delete_cart.php?id=<?= $cart_item['id'] ?>">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 text-gray-800">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                    </svg>
+                                </a>
+                                <img src="assets/images/shoes/<?= $product['image'] ?>" class="size-24 border rounded bg-white">
                                 <div class="block space-y-2">
-                                    <h4 class="bebas-neue">Air Jordan 1 Retro High OG 'Yellow Ochre'</h4>
-                                    <div class="flex items-center space-x-4">
-                                        <label for="quantity">Quantity</label>
-                                        <input type="number" name="quantity" id="quantity" class="text-center w-10 border ease duration-200 focus:outline-zinc-200 focus:ring-zinc-200 hover:outline-zinc-200 px-2 py-1 rounded appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" value="1" min="1" max="10">
-                                    </div>
+                                    <h4 class="bebas-neue"><?= $product['name'] ?></h4>
                                 </div>
                                 
                             </div>
                             <div class="block">
-                                <p class="bebas-neue">₱ 9,895.00</p>
+                                <p class="bebas-neue">₱ <?= $product['price'] ?></p>
                             </div>
                         </div>
-                        <?php endfor; ?>
-                    </div>
+                        <?php $total_price += $product['price']; ?>
+                    <?php endforeach; ?>
                     <div class="w-full md:p-0 p-4">
                         <div class="flex justify-between items-center">
                             <h4 class="bebas-neue text-xl">Total</h4>
-                            <p class="bebas-neue text-xl">₱ 29,685.00</p>
+                            <p class="bebas-neue text-xl">₱ <?= $total_price ?></p>
                         </div>
                     </div>
                     <div class="w-full md:p-0 p-4">
