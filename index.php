@@ -26,8 +26,13 @@
                         <img src="assets/images/shoes/<?= htmlspecialchars($product['image']); ?>" class="size-64 mx-auto">
                         <div class="mt-2 space-y-1">
                             <h4 class="bebas-neue text-lg"><?= htmlspecialchars($product['name']); ?></h4>
-                            <p class="bebas-neue">₱ <?= number_format($product['price'], 2); ?></p>
-                            <a href="add_cart.php?id=<?= $product['id']; ?>" class="bg-zinc-800 hover:bg-zinc-950 ease duration-200 text-white px-2 py-1 rounded">Add to cart</a>
+                            <div class="flex items-center space-x-2">
+                                <p class="bebas-neue">₱ <?= number_format($product['price'], 2); ?></p>
+                                <p class="bebas-neue text-gray-600">Stocks: <?= $product['stocks']; ?></p>
+                            </div>
+                            <div>
+                                <a href="add_cart.php?id=<?= $product['id']; ?>" class="bg-zinc-800 hover:bg-zinc-950 ease duration-200 text-white px-2 py-1 rounded">Add to cart</a>
+                            </div>
                         </div>
                     </div>
                     <?php endforeach; ?>
