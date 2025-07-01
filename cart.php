@@ -22,9 +22,6 @@
     $cart_items = $result->fetch_all(MYSQLI_ASSOC);
     $stmt->close();
 
-    print_r($cart_items);
-    echo $_SESSION['user_id'];
-
 ?>
 
 <!doctype html>
@@ -44,27 +41,37 @@
                     <div>
                         <h2 class="roboto font-medium text-2xl mb-4">Shopping Cart</h2>
                     </div>
-                    <?php foreach ($cart_items as $cart_item): ?>
-                        <?php $product = get_product_by_id($cart_item['product_id'], $conn); ?>
-                        <div class="border-b p-2 pb-4 flex items-center justify-between">
-                            <div class="flex items-center space-x-12">
-                                <a href="delete_cart.php?id=<?= $cart_item['id'] ?>">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 text-gray-800">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                    </svg>
-                                </a>
-                                <img src="assets/images/shoes/<?= $product['image'] ?>" class="size-24 border rounded bg-white">
-                                <div class="block space-y-2">
-                                    <h4 class="bebas-neue"><?= $product['name'] ?></h4>
+                    <?php if (count($cart_items) > 0): ?>
+                        <?php foreach ($cart_items as $cart_item): ?>
+                            <?php $product = get_product_by_id($cart_item['product_id'], $conn); ?>
+                            <div class="border-b p-2 pb-4 flex items-center justify-between">
+                                <div class="flex items-center space-x-12">
+                                    <a href="delete_cart.php?id=<?= $cart_item['id'] ?>">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 text-gray-800">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                        </svg>
+                                    </a>
+                                    <img src="assets/images/shoes/<?= $product['image'] ?>" class="size-24 border rounded bg-white">
+                                    <div class="block space-y-2">
+                                        <h4 class="bebas-neue"><?= $product['name'] ?></h4>
+                                    </div>
+                                    
                                 </div>
-                                
+                                <div class="block">
+                                    <p class="bebas-neue">₱ <?= $product['price'] ?></p>
+                                </div>
                             </div>
-                            <div class="block">
-                                <p class="bebas-neue">₱ <?= $product['price'] ?></p>
-                            </div>
+                            <?php $total_price += $product['price']; ?>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="text-center p-4">
+                            <p class="text-gray-600 text-3xl">Your cart is empty.</p>
+                            <p class="text-gray-500 text-lg">Your cart is currently empty. Start shopping now and fill it with your favorite items!</p>
                         </div>
-                        <?php $total_price += $product['price']; ?>
-                    <?php endforeach; ?>
+                    <?php endif; ?>
+
+
+                    <?php if (count($cart_items) > 0): ?>
                     <div class="w-full md:p-0 p-4">
                         <div class="flex justify-between items-center">
                             <h4 class="bebas-neue text-xl">Total</h4>
@@ -104,11 +111,11 @@
                             <button type="submit" class="col-span-2 bg-zinc-800 hover:bg-zinc-900 ease duration-200 text-white w-full py-2 mt-4 rounded">Checkout</button>
                         </form>
                     </div>
+                    <?php endif; ?>
                 </div>
                 
                 
             </div>
         </div>
-        <?php include 'templates/footer.php'; ?>
     </body>
 </html>
