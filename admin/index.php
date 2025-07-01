@@ -1,5 +1,13 @@
 <?php
     require_once '../config.php';
+    if (!isset($_SESSION['username']) || !isset($_SESSION['type'])) {
+        header('Location: login.php');
+    }
+
+    if ($_SESSION['type'] != 'admin') {
+        header("Location: ../index.php");
+    }
+
     $result = mysqli_query($conn, "SELECT * FROM products ORDER BY id DESC");
     $products = mysqli_fetch_all($result, MYSQLI_ASSOC);
 ?>
@@ -17,7 +25,7 @@
     <nav class="border bg-white">
         <div class="container mx-auto p-4 flex items-center justify-between">
             <h1 class="text-lg font-medium text-gray-800">Welcome back, Thaddeus!</h1>
-            <a href="#">Logout</a>
+            <a href="../logout.php">Logout</a>
         </div>
     </nav>
 
