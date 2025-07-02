@@ -6,7 +6,6 @@
     $upload_dir = '../assets/images/shoes';
 
     if ($_SERVER['REQUEST_METHOD'] === "POST"){
-        print_r($_POST);
         $name = $_POST['name'] ?? '';
         $price = $_POST['price'] ?? '';
         $image = $_FILES['image'] ?? null;
