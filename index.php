@@ -2,13 +2,13 @@
 
     require_once 'config.php';
     if (isset($_GET['brand'])) {
-        $stmt = mysqli_prepare($conn, "SELECT * FROM products WHERE brand_name = ? ORDER BY id DESC");
+        $stmt = mysqli_prepare($conn, "SELECT * FROM products WHERE brand_name = ? AND stocks > 0 ORDER BY id DESC");
         mysqli_stmt_bind_param($stmt, 's', $_GET['brand']);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         $products = mysqli_fetch_all($result, MYSQLI_ASSOC);
     } else {
-        $result = mysqli_query($conn, "SELECT * FROM products ORDER BY id DESC");
+        $result = mysqli_query($conn, "SELECT * FROM products WHERE stocks > 0 ORDER BY id DESC");
         $products = mysqli_fetch_all($result, MYSQLI_ASSOC);
     }
 
@@ -28,7 +28,7 @@
     <body>
         <?php include 'templates/navigation.php'; ?>
         <img src="assets/images/carousel1.webp" class="w-full h-[400px] object-cover">
-        <div class="space-y-8 my-12">
+        <div class="space-y-8 my-24">
             <div class="grid md:grid-cols-4 grid-cols-2 gap-4 max-w-7xl mx-auto">
                 <?php foreach ($brands as $brand): ?>
                     <a href="index.php?brand=<?= htmlspecialchars($brand['brand_name']); ?>" class="border px-2 text-center py-4 rounded bg-gray-50 shadow"><?= htmlspecialchars($brand['brand_name']); ?></a>
