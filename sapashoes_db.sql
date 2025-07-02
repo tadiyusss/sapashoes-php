@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.2.2
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: Jun 28, 2025 at 01:00 PM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.0.30
+-- Host: localhost
+-- Generation Time: Jul 02, 2025 at 09:53 PM
+-- Server version: 11.8.1-MariaDB-4
+-- PHP Version: 8.2.27
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -24,44 +24,31 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `products`
+-- Table structure for table `brands`
 --
 
-CREATE TABLE `products` (
+CREATE TABLE `brands` (
   `id` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `price` decimal(6,2) NOT NULL,
-  `image` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `brand_name` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 --
--- Dumping data for table `products`
+-- Dumping data for table `brands`
 --
 
--- --------------------------------------------------------
+INSERT INTO `brands` (`id`, `brand_name`) VALUES
+(3, 'Nike'),
+(4, 'Adidas'),
+(5, 'Puma');
 
 --
--- Table structure for table `users`
+-- Indexes for dumped tables
 --
 
-CREATE TABLE `users` (
-  `id` int(11) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `username` varchar(255) NOT NULL,
-  `password_hash` varchar(255) NOT NULL,
-  `type` enum('user','admin') NOT NULL DEFAULT 'user'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
 --
--- Indexes for table `products`
+-- Indexes for table `brands`
 --
-ALTER TABLE `products`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `users`
---
-ALTER TABLE `users`
+ALTER TABLE `brands`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -69,16 +56,10 @@ ALTER TABLE `users`
 --
 
 --
--- AUTO_INCREMENT for table `products`
+-- AUTO_INCREMENT for table `brands`
 --
-ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT for table `users`
---
-ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+ALTER TABLE `brands`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
