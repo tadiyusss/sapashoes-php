@@ -25,6 +25,13 @@
     $result = $stmt->get_result();
     $cart_items = $result->fetch_all(MYSQLI_ASSOC);
 
+    # get all sales
+    $stmt = $conn->prepare("SELECT * FROM sales WHERE owner_id = ?");
+    $stmt->bind_param("i", $_SESSION["user_id"]);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $sales = $result->fetch_all(MYSQLI_ASSOC);
+
     if($_SERVER['REQUEST_METHOD'] === "POST"){
         $card_number = $_POST['card_number'];
         $expiry_month = $_POST['expiry_month'];
@@ -117,11 +124,11 @@
 
         # insert into sales table
         if (!empty($discount_code)) {
-            $stmt = $conn->prepare("INSERT INTO sales (total, customer_name, address, city, sale_id, discount_code) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("dsssss", $total_price, $name, $address, $city, $sale_id, $discount_code);
+            $stmt = $conn->prepare("INSERT INTO sales (total, customer_name, address, city, sale_id, discount_code, owner_id) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("dsssssi", $total_price, $name, $address, $city, $sale_id, $discount_code, $_SESSION['user_id']);
         } else {
-            $stmt = $conn->prepare("INSERT INTO sales (total, customer_name, address, city, sale_id) VALUES (?, ?, ?, ?, ?)");
-            $stmt->bind_param("dssss", $total_price, $name, $address, $city, $sale_id);
+            $stmt = $conn->prepare("INSERT INTO sales (total, customer_name, address, city, sale_id, owner_id) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("dssss", $total_price, $name, $address, $city, $sale_id, $_SESSION['user_id']);
         }
         $stmt->execute();
         $stmt->close();
@@ -149,9 +156,21 @@
         <div class="space-y-8 my-12">
             <form method="POST" class="max-w-6xl mx-auto px-6">
                 <div class="space-y-8">
-                    <div>
-                        <h2 class="roboto font-medium text-2xl mb-4">Shopping Cart</h2>
-                    </div>
+                    <h2 class="roboto font-medium text-2xl mb-4">Orders</h2>
+                    <?php if (count($sales) > 0): ?>
+                        <div class="grid md:grid-cols-3 grid-cols-1 gap-4">
+                            <?php foreach ($sales as $sale): ?>
+                                <div class="border p-4 rounded bg-white">
+                                    <h4 class="bebas-neue text-xl mb-2">Sale ID: <?= $sale['sale_id'] ?></h4>
+                                    <p class="text-gray-600">Total: ₱ <?= format_number($sale['total']) ?></p>
+                                    <p class="text-gray-600">Status: <?= $sale['status'] ?></p>
+                                    <p class="text-gray-600">Date: <?= date('F j, Y', strtotime($sale['created_at'])) ?></p>
+                                    <a href="view_order.php?id=<?= $sale['sale_id'] ?>" class="text-blue-600 hover:underline mt-2 block">View Details</a>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                    <h2 class="roboto font-medium text-2xl mb-4">Shopping Cart</h2>
                     <?php if (count($cart_items) > 0): ?>
                         <?php foreach ($cart_items as $cart_item): ?>
                             <div class="border-b p-2 pb-4 flex items-center justify-between">
