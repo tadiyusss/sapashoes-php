@@ -6,15 +6,20 @@
     $upload_dir = '../assets/images/shoes';
 
     if ($_SERVER['REQUEST_METHOD'] === "POST"){
+        print_r($_POST);
         $name = $_POST['name'] ?? '';
         $price = $_POST['price'] ?? '';
         $image = $_FILES['image'] ?? null;
         $stocks = $_POST['stocks'] ?? '';
+        $brand = $_POST['brand'] ?? '';
 
-        if (!$name || !$price || !$image || !$stocks) {
+
+        if (!$name || !$price || !$image || !$stocks || !$brand) {
             $message = 'Please fill in all fields.';
             $error = true;
         }
+
+        if ($brand)
 
 
         if ($stocks <= 0) {
@@ -37,9 +42,9 @@
 
 
         if (!$error) {
-            $query = "INSERT INTO products (name, price, image, stocks) VALUES (?, ?, ?, ?)";
+            $query = "INSERT INTO products (name, price, image, stocks, brand_name) VALUES (?, ?, ?, ?, ?)";
             $stmt = mysqli_prepare($conn, $query);
-            mysqli_stmt_bind_param($stmt, 'sdsi', $name, $price, $new_name, $stocks);
+            mysqli_stmt_bind_param($stmt, 'sdsis', $name, $price, $new_name, $stocks, $brand);
 
             if (mysqli_stmt_execute($stmt)) {
                 $message = 'Product created successfully!';
@@ -50,6 +55,9 @@
         }
         
     }
+
+    $result = mysqli_query($conn, "SELECT * FROM brands ORDER BY id DESC");
+    $brands = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
 
 ?>
@@ -95,6 +103,14 @@
                         <div>
                             <label for="image" class="text-sm font-medium text-gray-600">Stocks</label>
                             <input type="number" name="stocks" id="stocks" class="w-full border ease duration-200 focus:outline-zinc-200 focus:ring-zinc-200 hover:outline-zinc-200 px-2 py-1 rounded appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                        </div>
+                        <div>
+                            <label for="brand" class="text-sm font-medium text-gray-600">Brands</label>
+                            <select name="brand" id="brand" class="w-full border bg-white ease duration-200 focus:outline-zinc-200 focus:ring-zinc-200 hover:outline-zinc-200 px-2 py-1 rounded">
+                                <?php foreach ($brands as $brand): ?>
+                                    <option value="<?= htmlspecialchars($brand['brand_name']); ?>"><?= htmlspecialchars($brand['brand_name']); ?></option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
                         <div>
                             <label for="image" class="text-sm font-medium text-gray-600">Image</label>

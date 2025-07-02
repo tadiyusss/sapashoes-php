@@ -103,8 +103,8 @@
                 <table class="w-full">
                     <thead class="bg-white">
                         <tr class="text-gray-400 border-y">
-                            <th class="font-semibold p-2">#</th>
                             <th class="font-semibold p-2">Name</th>
+                            <th class="font-semibold p-2">Brand</th>
                             <th class="font-semibold p-2">Price</th>
                             <th class="font-semibold p-2">Actions</th>
                         </tr>
@@ -117,8 +117,8 @@
                         <?php endif; ?>
                         <?php foreach ($products as $index => $product): ?>
                             <tr class="border-b text-center hover:bg-gray-50">
-                                <td class="py-2"><?php echo $index + 1; ?></td>
                                 <td class="py-2"><?php echo htmlspecialchars($product['name']); ?></td>
+                                <td class="py-2"><?php echo htmlspecialchars($product['brand_name']); ?></td>
                                 <td class="py-2">₱<?php echo number_format($product['price'], 2); ?></td>
                                 <td class="py-2 flex items-center justify-center space-x-4">
                                     <a href="edit_product.php?id=<?php echo $product['id']; ?>" class="px-2 py-1 rounded text-white bg-blue-600 hover:bg-blue-700">Edit</a>
@@ -154,7 +154,6 @@
                                 <td class="py-2"><?php echo $index + 1; ?></td>
                                 <td class="py-2"><?php echo htmlspecialchars($brand['brand_name']); ?></td>
                                 <td class="py-2 flex items-center justify-center space-x-4">
-                                    <a href="edit_brand.php?id=<?php echo $brand['id']; ?>" class="px-2 py-1 rounded text-white bg-blue-600 hover:bg-blue-700">Edit</a>
                                     <a href="delete_brand.php?id=<?php echo $brand['id']; ?>" class="px-2 py-1 rounded text-white bg-red-600 hover:bg-red-700">Delete</a>
                                 </td>
                             </tr>
