@@ -68,7 +68,6 @@
                 <table class="w-full">
                     <thead class="bg-white">
                         <tr class="text-gray-400 border-y">
-                            <th class="font-semibold p-2">#</th>
                             <th class="font-semibold p-2">Name</th>
                             <th class="font-semibold p-2">Total</th>
                             <th class="font-semibold p-2">Status</th>
@@ -83,12 +82,11 @@
                         <?php endif; ?>
                         <?php foreach ($sales as $index => $sale): ?>
                             <tr class="border-b text-center hover:bg-gray-50">
-                                <td class="py-2"><?= htmlspecialchars($sale['id']) ?></td>
                                 <td class="py-2"><?= htmlspecialchars($sale['customer_name']) ?></td>
                                 <td class="py-2"><?= htmlspecialchars($sale['total']) ?></td>
                                 <td class="py-2"><?= $sale['status'] ?></td>
                                 <td class="py-2">
-                                    <a href="#">Manage</a>
+                                    <a href="manage_sales.php?id=<?php echo $sale['sale_id']; ?>" class="px-2 py-1 rounded text-white bg-blue-600 hover:bg-blue-700 text-sm">Manage</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
