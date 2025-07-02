@@ -45,12 +45,22 @@
         if (!$error){
             $password_hash = password_hash($password, PASSWORD_DEFAULT);
             $sql = "INSERT INTO users (email, username, password_hash) VALUES (?, ?, ?)";
+            # get 
             $stmt = $conn->prepare($sql);
             if ($stmt) {
                 $stmt->bind_param("sss", $email, $username, $password_hash);
                 if ($stmt->execute()) {
+                    $stmt = $conn->prepare("SELECT id FROM users WHERE username = ? LIMIT 1");
+                    $stmt->bind_param("s", $username);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+                    $user = $result->fetch_assoc();
+
+                    $_SESSION['user_id'] = $user['id'];
                     $_SESSION['username'] = $username;
-                    header("Location: cart.php");
+                    $_SESSION['type'] = 'user';
+                    
+                    header("Location: index.php");
                 } else {
                     $message = "Registration failed. Please try again.";
                     $error = true;
@@ -92,11 +102,11 @@
                 <div class="space-y-4">
                     <div>
                         <label for="email" class="text-sm font-medium text-gray-600">Email</label>
-                        <input type="text" name="email" id="email" class="w-full border ease duration-200 focus:outline-zinc-200 focus:ring-zinc-200 hover:outline-zinc-200 px-2 py-1 rounded">
+                        <input type="text" name="email" id="email" class="w-full border ease duration-200 focus:outline-zinc-200 focus:ring-zinc-200 hover:outline-zinc-200 px-2 py-1 rounded" value="<?= htmlspecialchars($_POST["email"] ?? "") ?>">
                     </div>
                     <div>
                         <label for="username" class="text-sm font-medium text-gray-600">Username</label>
-                        <input type="text" name="username" id="username" class="w-full border ease duration-200 focus:outline-zinc-200 focus:ring-zinc-200 hover:outline-zinc-200 px-2 py-1 rounded">
+                        <input type="text" name="username" id="username" class="w-full border ease duration-200 focus:outline-zinc-200 focus:ring-zinc-200 hover:outline-zinc-200 px-2 py-1 rounded" value="<?= htmlspecialchars($_POST["username"] ?? "") ?>">
                     </div>
                     <div>
                         <label for="password" class="text-sm font-medium text-gray-600">Password</label>
