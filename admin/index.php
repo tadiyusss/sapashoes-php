@@ -17,6 +17,8 @@
     $result = mysqli_query($conn, "SELECT * FROM brands ORDER BY id DESC");
     $brands = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
+    $discounts = mysqli_query($conn, "SELECT * FROM discount_code ORDER BY id DESC");
+    $discounts = mysqli_fetch_all($discounts, MYSQLI_ASSOC);
 ?>
 
 <!doctype html>
@@ -155,6 +157,38 @@
                                 <td class="py-2"><?php echo htmlspecialchars($brand['brand_name']); ?></td>
                                 <td class="py-2 flex items-center justify-center space-x-4">
                                     <a href="delete_brand.php?id=<?php echo $brand['id']; ?>" class="px-2 py-1 rounded text-white bg-red-600 hover:bg-red-700">Delete</a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="border rounded shadow h-96 max-h-96 overflow-y-auto bg-white">
+                <div class="sticky top-0 flex items-center text-sm justify-between bg-gray-50 p-2 px-4">
+                    <h5 class="text-gray-500 font-semibold">Discount Code</h5>
+                    <a href="add_discount.php" class="bg-zinc-800 hover:bg-zinc-900 text-white px-2 py-1 rounded text-xs">Add Discount</a>
+                </div>
+                <table class="w-full">
+                    <thead class="bg-white">
+                        <tr class="text-gray-400 border-y">
+                            <th class="font-semibold p-2">Code</th>
+                            <th class="font-semibold p-2">Percentage</th>
+                            <th class="font-semibold p-2">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($discounts)): ?>
+                            <tr class="border-b text-center">
+                                <td colspan="4" class="py-2 text-gray-600">No discount code found.</td>
+                            </tr>
+                        <?php endif; ?>
+                        <?php foreach ($discounts as $index => $discount): ?>
+                            <tr class="border-b text-center hover:bg-gray-50">
+                                <td class="py-2"><?php echo htmlspecialchars($discount['discount_code']); ?></td>
+                                <td class="py-2"><?php echo htmlspecialchars($discount['percentage']); ?>%</td>
+                                <td class="py-2">
+                                    <a href="delete_discount.php?id=<?php echo $discount['id']; ?>" class="px-2 py-1 rounded text-white bg-red-600 hover:bg-red-700">Delete</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
