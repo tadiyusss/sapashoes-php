@@ -1,6 +1,7 @@
 <?php 
     require 'config.php';
     require_once 'utils/flash.php';
+    require_once 'utils/global.php';
 
     $total_price = 0;
     $error_message = get_flash('error');
@@ -35,7 +36,7 @@
         $discount_code = $_POST['discount'] ?? '';
         $sizes = $_POST['size'] ?? [];
 
-        if (empty($card_number) || empty($expiry_month) || empty($expiry_year) || empty($cvv) || empty($name) || empty($address) || empty($city) || empty($discount_code) || empty($sizes)) {
+        if (empty($card_number) || empty($expiry_month) || empty($expiry_year) || empty($cvv) || empty($name) || empty($address) || empty($city) || empty($sizes)) {
             set_flash('error', 'All fields are required.');
             header('Location: cart.php');
             exit;
@@ -64,22 +65,24 @@
         }
 
         # check if discount code is valid
-        $stmt = $conn->prepare("SELECT * FROM discount_code WHERE discount_code = ?");
-        $stmt->bind_param("s", $discount_code);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $discount = $result->fetch_assoc();
-        $stmt->close();
+        if (!empty($discount_code)) {
+            $stmt = $conn->prepare("SELECT * FROM discount_code WHERE discount_code = ?");
+            $stmt->bind_param("s", $discount_code);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $discount = $result->fetch_assoc();
+            $stmt->close();
 
-        if ($discount) {
-            $discount_percentage = $discount['percentage'];
-            $total_price = array_sum(array_column($cart_items, 'price'));
-            $discount_amount = ($total_price * $discount_percentage) / 100;
-            $total_price -= $discount_amount;
-        } else {
-            set_flash('error', 'Invalid discount code.');
-            header('Location: cart.php');
-            exit;
+            if ($discount) {
+                $discount_percentage = $discount['percentage'];
+                $total_price = array_sum(array_column($cart_items, 'price'));
+                $discount_amount = ($total_price * $discount_percentage) / 100;
+                $total_price -= $discount_amount;
+            } else {
+                set_flash('error', 'Invalid discount code.');
+                header('Location: cart.php');
+                exit;
+            }
         }
 
         $stmt = $conn->prepare("SELECT * FROM products JOIN cart ON products.id = cart.product_id WHERE cart.owner_id = ? AND products.stocks > 0 ORDER BY cart.id DESC;"); 
@@ -87,12 +90,21 @@
         $stmt->execute();
         $result = $stmt->get_result();
         $cart_items = $result->fetch_all(MYSQLI_ASSOC);
+        $sale_id = random_string(16);
+
         foreach ($cart_items as $cart_item){
             # -1 stock for each product in the cart
             $total += $cart_item['price'];
             $product_id = $cart_item['product_id'];
             $stmt = $conn->prepare("UPDATE products SET stocks = stocks - 1 WHERE id = ?");
             $stmt->bind_param("i", $product_id);
+            $stmt->execute();
+            $stmt->close();
+
+            # insert into sold_prodcts table columns: id, sale_id, product_id, size, sale_id, owner_id
+            $size = $sizes[$cart_item['id']] ?? null; // Get the size for the specific cart item
+            $stmt = $conn->prepare("INSERT INTO sold_products (product_id, size, sale_id, owner_id) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("iisi", $cart_item['product_id'], $size, $sale_id, $_SESSION['user_id']);
             $stmt->execute();
             $stmt->close();
 
@@ -104,8 +116,13 @@
         }
 
         # insert into sales table
-        $stmt = $conn->prepare("INSERT INTO sales (total, customer_name, address, city) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("dsss", $total_price, $name, $address, $city);
+        if (!empty($discount_code)) {
+            $stmt = $conn->prepare("INSERT INTO sales (total, customer_name, address, city, sale_id, discount_code) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("dsssss", $total_price, $name, $address, $city, $sale_id, $discount_code);
+        } else {
+            $stmt = $conn->prepare("INSERT INTO sales (total, customer_name, address, city, sale_id) VALUES (?, ?, ?, ?, ?)");
+            $stmt->bind_param("dssss", $total_price, $name, $address, $city, $sale_id);
+        }
         $stmt->execute();
         $stmt->close();
         # delete all items in the cart
