@@ -32,8 +32,10 @@
         $name = $_POST['name'];
         $address = $_POST['address'];
         $city = $_POST['city'];
+        $discount_code = $_POST['discount'] ?? '';
+        $sizes = $_POST['size'] ?? [];
 
-        if (empty($card_number) || empty($expiry_month) || empty($expiry_year) || empty($cvv) || empty($name) || empty($address) || empty($city)) {
+        if (empty($card_number) || empty($expiry_month) || empty($expiry_year) || empty($cvv) || empty($name) || empty($address) || empty($city) || empty($discount_code) || empty($sizes)) {
             set_flash('error', 'All fields are required.');
             header('Location: cart.php');
             exit;
@@ -61,8 +63,25 @@
             exit;
         }
 
-        # get all cart items that are not out of stock
-        $total = 0;
+        # check if discount code is valid
+        $stmt = $conn->prepare("SELECT * FROM discount_code WHERE discount_code = ?");
+        $stmt->bind_param("s", $discount_code);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $discount = $result->fetch_assoc();
+        $stmt->close();
+
+        if ($discount) {
+            $discount_percentage = $discount['percentage'];
+            $total_price = array_sum(array_column($cart_items, 'price'));
+            $discount_amount = ($total_price * $discount_percentage) / 100;
+            $total_price -= $discount_amount;
+        } else {
+            set_flash('error', 'Invalid discount code.');
+            header('Location: cart.php');
+            exit;
+        }
+
         $stmt = $conn->prepare("SELECT * FROM products JOIN cart ON products.id = cart.product_id WHERE cart.owner_id = ? AND products.stocks > 0 ORDER BY cart.id DESC;"); 
         $stmt->bind_param("i", $_SESSION["user_id"]);
         $stmt->execute();
@@ -86,7 +105,7 @@
 
         # insert into sales table
         $stmt = $conn->prepare("INSERT INTO sales (total, customer_name, address, city) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("dsss", $total, $name, $address, $city);
+        $stmt->bind_param("dsss", $total_price, $name, $address, $city);
         $stmt->execute();
         $stmt->close();
         # delete all items in the cart
@@ -111,7 +130,7 @@
     <body class="bg-gray-50">
         <?php include 'templates/navigation.php'; ?>
         <div class="space-y-8 my-12">
-            <div class="max-w-6xl mx-auto px-6">
+            <form method="POST" class="max-w-6xl mx-auto px-6">
                 <div class="space-y-8">
                     <div>
                         <h2 class="roboto font-medium text-2xl mb-4">Shopping Cart</h2>
@@ -127,7 +146,22 @@
                                     </a>
                                     <img src="assets/images/shoes/<?= $cart_item['image'] ?>" class="size-24 border rounded bg-white">
                                     <div class="block space-y-2">
-                                        <h4 class="bebas-neue"><?= $cart_item['name'] ?></h4>
+                                        <h4 class="bebas-neue text-xl"><?= $cart_item['name'] ?></h4>
+                                        <div class="grid md:grid-cols-4 grid-cols-1 gap-2 border border-gray-50">
+                                            <?php for($index = 5; $index <= 12; $index++): ?>
+                                                <?php
+                                                    // Make radio group unique per cart item
+                                                    $radio_name = "size[{$cart_item['id']}]";
+                                                    $radio_id = "size_{$cart_item['id']}_{$index}";
+                                                ?>
+                                                <div>
+                                                    <input type="radio" id="<?= $radio_id; ?>" name="<?= $radio_name; ?>" value="<?= $index ?>" class="hidden peer">
+                                                    <label for="<?= $radio_id; ?>" class="inline-flex items-center justify-between w-full px-2 py-1 text-gray-500 bg-white border border-gray-200 rounded cursor-pointer peer-checked:border-zinc-500 hover:text-gray-600 ease duration-200 hover:bg-gray-100 ">
+                                                        <p>US M: <?= $index; ?> / Women: <?= $index + 1.5; ?></p>
+                                                    </label>
+                                                </div>
+                                            <?php endfor; ?>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="block">
@@ -153,7 +187,7 @@
                     </div>
                     <div class="w-full md:p-0 p-4">
                         <h2 class="roboto font-medium text-2xl mb-4">Payment Information</h2>
-                        <form method="post" class="grid md:grid-cols-2 grid-cols-1 gap-4">
+                        <div class="grid md:grid-cols-2 grid-cols-1 gap-4">
                             <div class="md:col-span-1 col-span-2">
                                 <label for="card_number" class="text-sm font-medium text-gray-600">Card Number</label>
                                 <input type="number" name="card_number" id="card_number" class="w-full border ease duration-200 focus:outline-zinc-200 focus:ring-zinc-200 hover:outline-zinc-200 px-2 py-1 rounded appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" placeholder="1234 5678 9012 3456">
@@ -177,9 +211,15 @@
                                 <label for="address" class="text-sm font-medium text-gray-600">Address</label>
                                 <input type="text" name="address" id="address" class="w-full border ease duration-200 focus:outline-zinc-200 focus:ring-zinc-200 hover:outline-zinc-200 px-2 py-1 rounded appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
                             </div>
-                            <div class="md:col-span-1 col-span-2">
-                                <label for="city" class="text-sm font-medium text-gray-600">City</label>
-                                <input type="text" name="city" id="city" class="w-full border ease duration-200 focus:outline-zinc-200 focus:ring-zinc-200 hover:outline-zinc-200 px-2 py-1 rounded appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                            <div class="md:col-span-1 col-span-2 md:flex block items-center md:space-x-2 md:space-y-0 space-y-2">
+                                <div>
+                                    <label for="city" class="text-sm font-medium text-gray-600">City</label>
+                                    <input type="text" name="city" id="city" class="w-full border ease duration-200 focus:outline-zinc-200 focus:ring-zinc-200 hover:outline-zinc-200 px-2 py-1 rounded appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                                </div>
+                                <div>
+                                    <label for="discount" class="text-sm font-medium text-gray-600">Discount Code</label>
+                                    <input type="text" name="discount" id="discount" class="w-full border ease duration-200 focus:outline-zinc-200 focus:ring-zinc-200 hover:outline-zinc-200 px-2 py-1 rounded appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" placeholder="Enter discount code">
+                                </div>
                             </div>
                             <?php if ($error_message): ?>
                                 <div class="col-span-2 bg-red-600 p-2 text-white rounded">
@@ -187,13 +227,13 @@
                                 </div>
                             <?php endif; ?>
                             <button type="submit" class="col-span-2 bg-zinc-800 hover:bg-zinc-900 ease duration-200 text-white w-full py-2 mt-4 rounded">Checkout</button>
-                        </form>
+                        </div>
                     </div>
                     <?php endif; ?>
                 </div>
                 
                 
-            </div>
+            </form>
         </div>
     </body>
 </html>
