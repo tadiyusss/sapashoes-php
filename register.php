@@ -28,6 +28,9 @@
         } else if (!preg_match('/[0-9]/', $password)) {
             $message = "Password must contain at least one number";
             $error = true;
+        } else if (!preg_match('/[\W_]/', $password)) {
+            $message = "Password must contain at least one special character";
+            $error = true;
         } else if ($password !== $retype_password) {
             $message = "Passwords do not match";
             $error = true;
