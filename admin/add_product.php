@@ -38,7 +38,21 @@
             $message = 'Unable to move file to the upload folder.';
             $error = true;
         }
+        // Check if product name already exists
+        if (!$error) {
+            $check_query = "SELECT id FROM products WHERE name = ?";
+            $check_stmt = mysqli_prepare($conn, $check_query);
+            mysqli_stmt_bind_param($check_stmt, 's', $name);
+            mysqli_stmt_execute($check_stmt);
+            mysqli_stmt_store_result($check_stmt);
 
+            if (mysqli_stmt_num_rows($check_stmt) > 0) {
+                $message = 'A product with this name already exists.';
+                $error = true;
+            }
+
+            mysqli_stmt_close($check_stmt);
+        }
 
         if (!$error) {
             $query = "INSERT INTO products (name, price, image, stocks, brand_name) VALUES (?, ?, ?, ?, ?)";
