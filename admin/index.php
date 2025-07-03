@@ -33,7 +33,7 @@
 <body class="bg-gray-50 roboto">
     <nav class="border bg-white">
         <div class="container mx-auto p-4 flex items-center justify-between">
-            <h1 class="text-lg font-medium text-gray-800">Welcome back, Thaddeus!</h1>
+            <h1 class="text-lg font-medium text-gray-800">Welcome back, <?= htmlspecialchars($_SESSION['username']); ?></h1>
             <a href="../logout.php">Logout</a>
         </div>
     </nav>
