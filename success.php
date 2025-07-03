@@ -3,7 +3,7 @@
     <head>
         <meta charset='utf-8'>
         <meta name='viewport' content='width=device-width, initial-scale=1'>
-        <title>Tailwind</title>
+        <title>Success</title>
         <script src='assets/js/tailwind.js'></script>
         <link rel="stylesheet" href="assets/css/main.css">
     </head>
